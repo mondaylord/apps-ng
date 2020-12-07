@@ -89,6 +89,8 @@ const NavBar = () => {
       <NavItemSpacer />
       <NavBarButton href="HELLOWORLDAPP" name={t('App')} icon={BoxIcon} />
       <NavItemSpacer />
+      <NavBarButton href="KITTYAPP" name={t('KittyApp')} icon={BoxIcon} />
+      <NavItemSpacer />
       <NavBarButtonWrapper onClick={() => window.open('/legacy.html', '_blank')}>
         <SidebarIcon size={21} />
         <NavBarButtonLabel>Polkadot UI</NavBarButtonLabel>

@@ -29,6 +29,12 @@
       "@phala/helloworld-app": [
         "../../packages/helloworld-app/src"
       ],
+      "@phala/kitty-app/*": [
+        "../../packages/kitty-app/src/*"
+      ],
+      "@phala/kitty-app": [
+        "../../packages/kitty-app/src"
+      ],
       "@phala/runtime/*": [
         "../../packages/runtime/src/*"
       ],

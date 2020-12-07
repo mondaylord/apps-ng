@@ -4231,6 +4231,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@phala/kitty-app@workspace:packages/kitty-app":
+  version: 0.0.0-use.local
+  resolution: "@phala/kitty-app@workspace:packages/kitty-app"
+  languageName: unknown
+  linkType: soft
+
 "@phala/react-signer@workspace:packages/react-signer":
   version: 0.0.0-use.local
   resolution: "@phala/react-signer@workspace:packages/react-signer"
