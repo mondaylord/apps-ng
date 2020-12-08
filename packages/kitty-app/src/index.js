@@ -44,8 +44,7 @@ const AppBody = observer(() => {
       const response = await kittyApp.queryBox(appRuntime)
       // Print the response in the original to the console
       console.log('Response::ObserveBox', response);
-
-      kittyApp.setBox(response.ObserveBox.blind_box)
+      kittyApp.setBox(response.ObserveBox.blindBox)
     } catch (err) {
       setToast(err.message, 'error')
     }
@@ -79,7 +78,7 @@ const AppBody = observer(() => {
 
       <h3>Box</h3>
       <section>
-        <div>Blind Box: {kittyApp.blind_box === null ? 'unknown' : kittyApp.blind_box}</div>
+        <div>Blind Box: {kittyApp.blind_box === null ? 'unknown' : kittyApp.blind_box.length}</div>
         <div><Button onClick={updateBox}>ObserveBox</Button></div>
       </section>
       <Spacer y={1}/>
