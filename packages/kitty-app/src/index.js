@@ -32,7 +32,7 @@ const AppHeader = () => (
 const AppBody = observer(() => {
   const { appRuntime, kittyApp } = useStore();
   const [, setToast] = useToasts()
-  const { state: inc, bindings } = useInput('1')
+  const { state: inc, bindings } = useInput('-1')
 
   /**
    * Updates the counter by querying the kitty contract
@@ -61,11 +61,17 @@ const AppBody = observer(() => {
   },[inc])
 
   const openCommandPayload = useMemo(() => {
-    const blind_box_id = "0x2222";
+    const num = parseInt(inc)
+    if (isNaN(num) || inc < 0 || inc >= 10) {
+      return {}
+    } else {
+      const blind_box_id = kittyApp.blind_box[num];
       return {
         Open: {blind_box_id}
+      }
     }
-  },[undefined])
+      
+  },[inc])
 
   return (
     <Container>
@@ -78,7 +84,7 @@ const AppBody = observer(() => {
 
       <h3>Box</h3>
       <section>
-        <div>Blind Box: {kittyApp.blind_box === null ? 'unknown' : kittyApp.blind_box.length}</div>
+        <div>Blind Box: {kittyApp.blind_box.length === 0 ? 'empty box' : kittyApp.blind_box.length}</div>
         <div><Button onClick={updateBox}>ObserveBox</Button></div>
       </section>
       <Spacer y={1}/>
@@ -108,6 +114,9 @@ const AppBody = observer(() => {
 
       <h3>Open Boxes</h3>
       <section>
+        <div>
+          <Input label="By" {...bindings} />
+        </div>
         <ButtonWrapper>
           <PushCommandButton
               // tx arguments
