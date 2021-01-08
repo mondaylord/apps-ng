@@ -35,10 +35,10 @@ const AppBody = observer(() => {
   const { state: inc, bindings } = useInput('-1')
 
   /**
-   * Updates the counter by querying the kitty contract
-   * The type definitions of `GetCount` request and response can be found at contract/kitty.rs
+   * Updates the box length by querying the kitty contract
+   * The type definitions of `ObserveBox` request and response can be found at contract/substrate_kitties.rs
    */
-  async function updateBox () {
+  async function updateBox() {
     if (!kittyApp) return
     try {
       const response = await kittyApp.queryBox(appRuntime)
@@ -50,28 +50,37 @@ const AppBody = observer(() => {
     }
   }
 
-  /**
-   * The `increment` transaction payload object
-   * It follows the command type definition of the contract (at contract/kitty.rs)
-   */
+  async function updateOwnedBox() {
+    if (!kittyApp) return
+    try {
+      const response = await kittyApp.queryOwnedBox(appRuntime)
+      // Print the response in the original to the console
+      console.log('Response::ObserveOwnedBox', response);
+      kittyApp.setOwnedBox(response.ObserveOwnedBox.ownedBox)
+    } catch (err) {
+      setToast(err.message, 'error')
+    }
+  }
+
   const packCommandPayload = useMemo(() => {
-      return {
-        Pack: {}
-      }
-  },[inc])
+    return {
+      Pack: {}
+    }
+  }, [inc])
 
   const openCommandPayload = useMemo(() => {
     const num = parseInt(inc)
-    if (isNaN(num) || inc < 0 || inc >= 10) {
+    if (isNaN(num) || inc < 0 || inc >= kittyApp.blindBox.length || kittyApp.blindBox.length === 0) {
+      console.log("You cannot open yet! Pack kitties first or enter a legal box number.")
       return {}
     } else {
-      const blind_box_id = kittyApp.blind_box[num];
+      const blindBoxId = kittyApp.blindBox[num];
       return {
-        Open: {blind_box_id}
+        Open: { blindBoxId }
       }
     }
-      
-  },[inc])
+
+  }, [inc])
 
   return (
     <Container>
@@ -80,35 +89,48 @@ const AppBody = observer(() => {
         <div>PRuntime ping: {appRuntime.latency || '+∞'}</div>
         <div>PRuntime connected: {appRuntime?.channelReady ? 'yes' : 'no'}</div>
       </section>
-      <Spacer y={1}/>
+      <Spacer y={1} />
 
-      <h3>Box</h3>
+      <h3>Boxes you can open</h3>
       <section>
-        <div>Blind Box: {kittyApp.blind_box.length === 0 ? 'empty box' : kittyApp.blind_box.length}</div>
+        <div>Blind Box: {kittyApp.blindBox.length === 0 ? 'empty box' : kittyApp.blindBox.length}</div>
+        <div>{kittyApp.blindBox.map((blindBox, id) => (
+          <div key={id} >{blindBox}</div>
+        ))}</div>
         <div><Button onClick={updateBox}>ObserveBox</Button></div>
       </section>
-      <Spacer y={1}/>
+      <Spacer y={1} />
+
+      <h3>Boxes you owned</h3>
+      <section>
+        <div>Blind Box: {kittyApp.ownedBox.length === 0 ? 'No owned box' : kittyApp.ownedBox.length}</div>
+        <div>{kittyApp.ownedBox.map((ownedBox, id) => (
+          <div key={id} >{ownedBox}</div>
+        ))}</div>
+        <div><Button onClick={updateOwnedBox}>ObserveOwnedBox</Button></div>
+      </section>
+      <Spacer y={1} />
 
       <h3>Pack Kitties</h3>
       <section>
         <ButtonWrapper>
           {/**  
             * PushCommandButton is the easy way to send confidential contract txs.
-            * Below it's configurated to send Kitty::Increment()
+            * Below it's configurated to send Kitty::Pack()
             */}
           <PushCommandButton
-              // tx arguments
-              contractId={CONTRACT_KITTY}
-              payload={packCommandPayload}
-              // display messages
-              modalTitle='SubstrateKitties.Pack()'
-              modalSubtitle={`Pack the kitty by ${inc}`}
-              onSuccessMsg='Tx succeeded'
-              // button appearance
-              buttonType='secondaryLight'
-              icon={PlusIcon}
-              name='Send'
-            />
+            // tx arguments
+            contractId={CONTRACT_KITTY}
+            payload={packCommandPayload}
+            // display messages
+            modalTitle='SubstrateKitties.Pack()'
+            modalSubtitle={`Pack the kitty with blind boxes`}
+            onSuccessMsg='Tx succeeded'
+            // button appearance
+            buttonType='secondaryLight'
+            icon={PlusIcon}
+            name='Pack'
+          />
         </ButtonWrapper>
       </section>
 
@@ -119,18 +141,18 @@ const AppBody = observer(() => {
         </div>
         <ButtonWrapper>
           <PushCommandButton
-              // tx arguments
-              contractId={CONTRACT_KITTY}
-              payload={openCommandPayload}
-              // display messages
-              modalTitle='Kitty.Open()'
-              modalSubtitle={`Open the kitty by ${inc}`}
-              onSuccessMsg='Tx succeeded'
-              // button appearance
-              buttonType='secondaryLight'
-              icon={PlusIcon}
-              name='Send'
-            />
+            // tx arguments
+            contractId={CONTRACT_KITTY}
+            payload={openCommandPayload}
+            // display messages
+            modalTitle='Kitty.Open()'
+            modalSubtitle={`Open the box which the number is ${inc}, id is ${kittyApp.blindBox[inc]}`}
+            onSuccessMsg='Tx succeeded'
+            // button appearance
+            buttonType='secondaryLight'
+            icon={PlusIcon}
+            name='Open'
+          />
         </ButtonWrapper>
       </section>
 
