@@ -32,7 +32,8 @@ const AppHeader = () => (
 const AppBody = observer(() => {
   const { appRuntime, kittyApp } = useStore();
   const [, setToast] = useToasts()
-  const { state: inc, bindings } = useInput('-1')
+  const { state: inc, bindings: incBindings } = useInput('-1')
+  const { state: user, bindings: userBindings } = useInput('Charlie')
 
   /**
    * Updates the box length by querying the kitty contract
@@ -68,13 +69,22 @@ const AppBody = observer(() => {
     }
   }, [inc])
 
+  const transferCommandPayload = useMemo(() => {
+    const num = parseInt(inc)
+    const dest = user;
+    const blindBoxId = kittyApp.ownedBox[num];
+    return {
+      Transfer: { dest, blindBoxId }
+    }
+  }, [user])
+
   const openCommandPayload = useMemo(() => {
     const num = parseInt(inc)
-    if (isNaN(num) || inc < 0 || inc >= kittyApp.blindBox.length || kittyApp.blindBox.length === 0) {
+    if (isNaN(num) || inc < 0 || inc >= kittyApp.ownedBox.length || kittyApp.ownedBox.length === 0) {
       console.log("You cannot open yet! Pack kitties first or enter a legal box number.")
       return {}
     } else {
-      const blindBoxId = kittyApp.blindBox[num];
+      const blindBoxId = kittyApp.ownedBox[num];
       return {
         Open: { blindBoxId }
       }
@@ -114,7 +124,7 @@ const AppBody = observer(() => {
       <h3>Pack Kitties</h3>
       <section>
         <ButtonWrapper>
-          {/**  
+          {/**
             * PushCommandButton is the easy way to send confidential contract txs.
             * Below it's configurated to send Kitty::Pack()
             */}
@@ -134,10 +144,39 @@ const AppBody = observer(() => {
         </ButtonWrapper>
       </section>
 
+      <h3>Transfer Box</h3>
+      <section>
+        <div>
+          <Input label="To" {...userBindings} />
+        </div>
+        <div>
+          <Input label="By" {...incBindings} />
+        </div>
+        <ButtonWrapper>
+          {/**
+            * PushCommandButton is the easy way to send confidential contract txs.
+            * Below it's configurated to send Kitty::Pack()
+            */}
+          <PushCommandButton
+            // tx arguments
+            contractId={CONTRACT_KITTY}
+            payload={transferCommandPayload}
+            // display messages
+            modalTitle='SubstrateKitties.Transer(dest, blind_box_id)'
+            modalSubtitle={`Transfer the blind box ${kittyApp.blindBox[inc]} to ${user}`}
+            onSuccessMsg='Tx succeeded'
+            // button appearance
+            buttonType='secondaryLight'
+            icon={PlusIcon}
+            name='Transfer'
+          />
+        </ButtonWrapper>
+      </section>
+
       <h3>Open Boxes</h3>
       <section>
         <div>
-          <Input label="By" {...bindings} />
+          <Input label="By" {...incBindings} />
         </div>
         <ButtonWrapper>
           <PushCommandButton

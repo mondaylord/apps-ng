@@ -8,11 +8,12 @@ export const createSubstrateKittiesAppStore = (defaultValue = {}, options = {}) 
       blindBox: types.array(types.string),
       kittyNum: types.maybeNull(types.number),
       ownedBox: types.array(types.string),
+      owner: types.array(types.string),
     })
     .actions(self => ({
       setBox: flow(function* setBox(box) {
         for (var box_id in box) {
-          var id = box[box_id].id
+          var id = box[box_id].blindBoxId
           if (self.blindBox.indexOf(id) < 0)
             self.blindBox.push(id)
         }
@@ -27,18 +28,23 @@ export const createSubstrateKittiesAppStore = (defaultValue = {}, options = {}) 
             self.ownedBox.push(id)
         }
       }),
+      setOwner: flow(function* setOwner(owner) {
+        self.owner = owner
+      }),
       async queryBox(runtime) {
         // Observe the boxes
         return await runtime.query(CONTRACT_KITTY, 'ObserveBox')
       },
       async queryKitties(runtime) {
-        return await runtime.query(CONTRACT_KITTY, 'ObserveKitties')
+        return await runtime.query(CONTRACT_KITTY, 'ObserveLeftKitties')
       },
       async queryOwnedBox(runtime) {
         return await runtime.query(CONTRACT_KITTY, 'ObserveOwnedBox')
+      },
+      async queryOwner(runtime) {
+        return await runtime.query(CONTRACT_KITTY, 'OwnerOf')
       },
     }))
 
   return SubstrateKittiesAppStore.create(defaultValue)
 }
-
